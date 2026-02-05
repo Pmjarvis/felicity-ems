@@ -1,9 +1,30 @@
+import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const AdminDashboard = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [stats, setStats] = useState({
+    totalUsers: 0,
+    totalOrganizers: 0,
+    totalEvents: 0,
+    pendingResets: 0
+  });
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  const fetchStats = async () => {
+    try {
+      const response = await axios.get('/admin/stats');
+      setStats(response.data.data);
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+    }
+  };
 
   const handleLogout = async () => {
     await logout();
@@ -48,25 +69,25 @@ const AdminDashboard = () => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div className="bg-gradient-to-br from-red-500 to-red-600 text-white p-6 rounded-lg">
               <h3 className="text-lg font-semibold mb-2">Total Users</h3>
-              <p className="text-3xl font-bold">0</p>
+              <p className="text-3xl font-bold">{stats.totalUsers}</p>
               <p className="text-sm opacity-90">Registered users</p>
             </div>
             
             <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 rounded-lg">
               <h3 className="text-lg font-semibold mb-2">Organizers</h3>
-              <p className="text-3xl font-bold">0</p>
+              <p className="text-3xl font-bold">{stats.totalOrganizers}</p>
               <p className="text-sm opacity-90">Active organizers</p>
             </div>
             
             <div className="bg-gradient-to-br from-green-500 to-green-600 text-white p-6 rounded-lg">
               <h3 className="text-lg font-semibold mb-2">Events</h3>
-              <p className="text-3xl font-bold">0</p>
+              <p className="text-3xl font-bold">{stats.totalEvents}</p>
               <p className="text-sm opacity-90">Total events</p>
             </div>
             
             <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-6 rounded-lg">
               <h3 className="text-lg font-semibold mb-2">Password Resets</h3>
-              <p className="text-3xl font-bold">0</p>
+              <p className="text-3xl font-bold">{stats.pendingResets}</p>
               <p className="text-sm opacity-90">Pending requests</p>
             </div>
           </div>
@@ -75,15 +96,24 @@ const AdminDashboard = () => {
           <div className="mt-8">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">Quick Actions</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <button className="p-4 bg-blue-50 hover:bg-blue-100 rounded-lg text-left transition">
+              <button 
+                onClick={() => navigate('/admin/organizers')}
+                className="p-4 bg-blue-50 hover:bg-blue-100 rounded-lg text-left transition"
+              >
                 <h4 className="font-semibold text-blue-900">Manage Organizers</h4>
                 <p className="text-sm text-blue-700">Add or remove clubs/organizers</p>
               </button>
-              <button className="p-4 bg-green-50 hover:bg-green-100 rounded-lg text-left transition">
+              <button 
+                onClick={() => navigate('/admin/events')}
+                className="p-4 bg-green-50 hover:bg-green-100 rounded-lg text-left transition"
+              >
                 <h4 className="font-semibold text-green-900">View All Events</h4>
                 <p className="text-sm text-green-700">Monitor all events</p>
               </button>
-              <button className="p-4 bg-purple-50 hover:bg-purple-100 rounded-lg text-left transition">
+              <button 
+                onClick={() => navigate('/admin/password-resets')}
+                className="p-4 bg-purple-50 hover:bg-purple-100 rounded-lg text-left transition"
+              >
                 <h4 className="font-semibold text-purple-900">Password Requests</h4>
                 <p className="text-sm text-purple-700">Handle reset requests</p>
               </button>

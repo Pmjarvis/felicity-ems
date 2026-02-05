@@ -47,9 +47,17 @@ io.on('connection', (socket) => {
 
 // Import Routes
 const authRoutes = require('./routes/auth');
+const adminRoutes = require('./routes/admin');
+const organizerRoutes = require('./routes/organizer');
+const eventRoutes = require('./routes/events');
+const userRoutes = require('./routes/users');
 
 // API Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/organizer', organizerRoutes);
+app.use('/api/events', eventRoutes);
+app.use('/api/users', userRoutes);
 
 // Basic Routes
 app.get('/', (req, res) => {

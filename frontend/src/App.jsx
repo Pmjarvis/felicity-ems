@@ -9,6 +9,15 @@ import ParticipantDashboard from './pages/participant/Dashboard';
 import OrganizerDashboard from './pages/organizer/Dashboard';
 import AdminDashboard from './pages/admin/Dashboard';
 
+// Admin Pages
+import ManageOrganizers from './pages/admin/ManageOrganizers';
+import PasswordResets from './pages/admin/PasswordResets';
+
+// Organizer Pages
+import CreateEvent from './pages/organizer/CreateEvent';
+import MyEvents from './pages/organizer/MyEvents';
+import OrganizerProfile from './pages/organizer/OrganizerProfile';
+
 function App() {
   return (
     <Router>
@@ -37,6 +46,30 @@ function App() {
               </PrivateRoute>
             } 
           />
+          <Route 
+            path="/organizer/create-event" 
+            element={
+              <PrivateRoute allowedRoles={['organizer']}>
+                <CreateEvent />
+              </PrivateRoute>
+            } 
+          />
+          <Route 
+            path="/organizer/events" 
+            element={
+              <PrivateRoute allowedRoles={['organizer']}>
+                <MyEvents />
+              </PrivateRoute>
+            } 
+          />
+          <Route 
+            path="/organizer/profile" 
+            element={
+              <PrivateRoute allowedRoles={['organizer']}>
+                <OrganizerProfile />
+              </PrivateRoute>
+            } 
+          />
           
           {/* Protected Routes - Admin */}
           <Route 
@@ -44,6 +77,22 @@ function App() {
             element={
               <PrivateRoute allowedRoles={['admin']}>
                 <AdminDashboard />
+              </PrivateRoute>
+            } 
+          />
+          <Route 
+            path="/admin/organizers" 
+            element={
+              <PrivateRoute allowedRoles={['admin']}>
+                <ManageOrganizers />
+              </PrivateRoute>
+            } 
+          />
+          <Route 
+            path="/admin/password-resets" 
+            element={
+              <PrivateRoute allowedRoles={['admin']}>
+                <PasswordResets />
               </PrivateRoute>
             } 
           />
