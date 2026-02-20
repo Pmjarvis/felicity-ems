@@ -1,11 +1,23 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login, loading, error, setError } = useAuth();
-  
+  const { login, loading, error, setError, user } = useAuth();
+
+  // Redirect already-authenticated users
+  useEffect(() => {
+    if (user) {
+      const dashboardRoute = user.role === 'admin'
+        ? '/admin/dashboard'
+        : user.role === 'organizer'
+          ? '/organizer/dashboard'
+          : '/participant/dashboard';
+      navigate(dashboardRoute, { replace: true });
+    }
+  }, [user, navigate]);
+
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -38,12 +50,12 @@ const Login = () => {
 
     if (result.success) {
       // Get dashboard route based on user role
-      const dashboardRoute = result.user.role === 'admin' 
+      const dashboardRoute = result.user.role === 'admin'
         ? '/admin/dashboard'
         : result.user.role === 'organizer'
-        ? '/organizer/dashboard'
-        : '/participant/dashboard';
-      
+          ? '/organizer/dashboard'
+          : '/participant/dashboard';
+
       navigate(dashboardRoute);
     } else {
       setLocalError(result.message);
@@ -153,12 +165,17 @@ const Login = () => {
                 Register here
               </Link>
             </p>
+            <p className="text-gray-600 mt-2">
+              <Link to="/forgot-password" className="text-gray-500 hover:text-blue-600 text-sm">
+                Forgot Password? (Organizers only)
+              </Link>
+            </p>
           </div>
 
           {/* Quick Login Info */}
           <div className="mt-6 pt-6 border-t border-gray-200">
             <p className="text-xs text-gray-500 text-center">
-              🔐 Default Admin: admin@felicity.iiit.ac.in / admin123456
+              Felicity Event Management System - IIIT Hyderabad
             </p>
           </div>
         </div>

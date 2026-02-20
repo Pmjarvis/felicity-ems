@@ -24,7 +24,7 @@ const Register = () => {
   // Available interests
   const availableInterests = [
     'Technical', 'Cultural', 'Sports', 'Literary', 'Management', 
-    'Music', 'Dance', 'Drama', 'Art', 'Photography'
+    'Music', 'Dance', 'Drama', 'Art', 'Photography', 'Gaming', 'Entrepreneurship', 'Science'
   ];
 
   const handleChange = (e) => {

@@ -1,0 +1,17 @@
+# Felicity EMS Deployment URLs
+
+## Frontend
+URL: https://felicity-ems.vercel.app
+
+## Backend API
+URL: https://felicity-ems-api.onrender.com
+
+---
+Note: These are placeholder URLs. 
+You must deploy the application and replace these with actual URLs before submission.
+
+Deployment Steps:
+1. Frontend: Deploy to Vercel (npm run build, then deploy dist folder)
+2. Backend: Deploy to Render/Railway (set environment variables from .env)
+3. Update FRONTEND_URL in backend environment to production frontend URL
+4. Update axios baseURL in frontend to production API URL

@@ -18,12 +18,11 @@ const ManageOrganizers = () => {
   const [error, setError] = useState('');
 
   const categories = [
-    'Technical Club',
-    'Cultural Club',
-    'Sports Club',
-    'Literary Club',
-    'Student Council',
-    'Fest Team',
+    'Technical',
+    'Cultural',
+    'Sports',
+    'Literary',
+    'Management',
     'Other'
   ];
 
@@ -49,7 +48,7 @@ const ManageOrganizers = () => {
 
     try {
       const response = await axios.post('/admin/organizers', newOrganizer);
-      
+
       // Show credentials to admin
       setCreatedCredentials({
         name: response.data.data.name,
@@ -85,6 +84,21 @@ const ManageOrganizers = () => {
     } catch (error) {
       console.error('Error deleting organizer:', error);
       alert('Failed to delete organizer');
+    }
+  };
+
+  const handleToggleStatus = async (id, name, currentStatus) => {
+    const action = currentStatus === 'active' ? 'disable' : 'enable';
+    if (!window.confirm(`Are you sure you want to ${action} ${name}?`)) {
+      return;
+    }
+
+    try {
+      await axios.put(`/admin/organizers/${id}/toggle-status`);
+      fetchOrganizers();
+    } catch (error) {
+      console.error('Error toggling organizer status:', error);
+      alert(`Failed to ${action} organizer`);
     }
   };
 
@@ -163,7 +177,7 @@ const ManageOrganizers = () => {
                   <tr key={org._id}>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">
-                        {org.organizationName || `${org.firstName} ${org.lastName}`}
+                        {org.organizerName || `${org.firstName} ${org.lastName}`}
                       </div>
                       <div className="text-sm text-gray-500">{org.email}</div>
                     </td>
@@ -179,21 +193,32 @@ const ManageOrganizers = () => {
                       {org.eventCount || 0}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                        org.accountStatus === 'active' 
-                          ? 'bg-green-100 text-green-800' 
+                      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${org.accountStatus === 'active'
+                          ? 'bg-green-100 text-green-800'
                           : 'bg-red-100 text-red-800'
-                      }`}>
+                        }`}>
                         {org.accountStatus}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <button
-                        onClick={() => handleDelete(org._id, org.organizationName)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        Delete
-                      </button>
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={() => handleToggleStatus(org._id, org.organizerName, org.accountStatus)}
+                          className={`${
+                            org.accountStatus === 'active'
+                              ? 'text-yellow-600 hover:text-yellow-900'
+                              : 'text-green-600 hover:text-green-900'
+                          }`}
+                        >
+                          {org.accountStatus === 'active' ? 'Disable' : 'Enable'}
+                        </button>
+                        <button
+                          onClick={() => handleDelete(org._id, org.organizerName)}
+                          className="text-red-600 hover:text-red-900"
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -207,7 +232,7 @@ const ManageOrganizers = () => {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
               <h2 className="text-2xl font-bold mb-6">Add New Organizer</h2>
-              
+
               {error && (
                 <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
                   {error}
@@ -309,7 +334,7 @@ const ManageOrganizers = () => {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4">
               <h2 className="text-2xl font-bold mb-4 text-green-600">✅ Organizer Created!</h2>
-              
+
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
                 <p className="text-sm text-yellow-800 font-semibold mb-2">
                   ⚠️ Important: Save these credentials now!

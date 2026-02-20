@@ -45,7 +45,9 @@ const teamSchema = new mongoose.Schema({
   // Invite Code
   inviteCode: {
     type: String,
-    required: true
+    default: function() {
+      return 'TEAM-' + require('crypto').randomBytes(4).toString('hex').toUpperCase();
+    }
   },
   
   // Team Status
@@ -92,13 +94,12 @@ teamSchema.index({ inviteCode: 1 });
 teamSchema.index({ 'members.user': 1 });
 
 // Generate unique invite code before saving
-teamSchema.pre('save', function(next) {
+teamSchema.pre('save', function() {
   if (!this.inviteCode) {
     // Generate format: TEAM-RANDOM8
     const random = crypto.randomBytes(4).toString('hex').toUpperCase();
     this.inviteCode = `TEAM-${random}`;
   }
-  next();
 });
 
 // Method to add member

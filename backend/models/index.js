@@ -4,11 +4,13 @@ const Event = require('./Event');
 const Registration = require('./Registration');
 const Team = require('./Team');
 const PasswordReset = require('./PasswordReset');
+const Message = require('./Message');
 
 module.exports = {
   User,
   Event,
   Registration,
   Team,
-  PasswordReset
+  PasswordReset,
+  Message
 };

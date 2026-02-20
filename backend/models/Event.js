@@ -12,7 +12,7 @@ const eventSchema = new mongoose.Schema({
     required: [true, 'Event description is required'],
     trim: true
   },
-  
+
   // Event Type
   type: {
     type: String,
@@ -20,14 +20,14 @@ const eventSchema = new mongoose.Schema({
     required: true,
     default: 'Normal'
   },
-  
+
   // Organizer Reference
   organizer: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
   },
-  
+
   // Dates
   startDate: {
     type: Date,
@@ -41,21 +41,21 @@ const eventSchema = new mongoose.Schema({
     type: Date,
     required: [true, 'Registration deadline is required']
   },
-  
+
   // Status
   status: {
     type: String,
     enum: ['Draft', 'Published', 'Ongoing', 'Completed', 'Closed', 'Cancelled'],
     default: 'Draft'
   },
-  
+
   // Eligibility
   eligibility: {
     type: String,
     enum: ['All', 'IIIT Only', 'Non-IIIT Only'],
     default: 'All'
   },
-  
+
   // Registration
   registrationLimit: {
     type: Number,
@@ -70,13 +70,13 @@ const eventSchema = new mongoose.Schema({
     default: 0,
     min: 0
   },
-  
+
   // Tags for search and filtering
   tags: [{
     type: String,
     trim: true
   }],
-  
+
   // Normal Event Specific Fields
   customForm: {
     fields: [{
@@ -110,7 +110,7 @@ const eventSchema = new mongoose.Schema({
       default: false // Locks after first registration
     }
   },
-  
+
   // Merchandise Event Specific Fields
   merchandise: {
     itemDetails: {
@@ -136,7 +136,7 @@ const eventSchema = new mongoose.Schema({
       min: 1
     }
   },
-  
+
   // Team Event Fields (Tier A Feature)
   isTeamEvent: {
     type: Boolean,
@@ -152,7 +152,7 @@ const eventSchema = new mongoose.Schema({
     default: 1,
     min: 1
   },
-  
+
   // Analytics & Tracking
   views: {
     type: Number,
@@ -168,7 +168,7 @@ const eventSchema = new mongoose.Schema({
       default: Date.now
     }
   },
-  
+
   // Additional Settings
   bannerImage: {
     type: String,
@@ -178,7 +178,7 @@ const eventSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
-  
+
   // Timestamps
   createdAt: {
     type: Date,
@@ -202,18 +202,17 @@ eventSchema.index({ tags: 1 });
 eventSchema.index({ name: 'text', description: 'text' }); // Text search
 
 // Validation: End date must be after start date
-eventSchema.pre('save', function(next) {
+eventSchema.pre('save', async function () {
   if (this.endDate < this.startDate) {
-    next(new Error('End date must be after start date'));
+    throw new Error('End date must be after start date');
   }
   if (this.registrationDeadline > this.startDate) {
-    next(new Error('Registration deadline must be before event start date'));
+    throw new Error('Registration deadline must be before event start date');
   }
-  next();
 });
 
 // Method to check if registration is open
-eventSchema.methods.isRegistrationOpen = function() {
+eventSchema.methods.isRegistrationOpen = function () {
   const now = new Date();
   return (
     this.status === 'Published' &&
@@ -223,19 +222,19 @@ eventSchema.methods.isRegistrationOpen = function() {
 };
 
 // Method to check if event is full
-eventSchema.methods.isFull = function() {
+eventSchema.methods.isFull = function () {
   if (this.registrationLimit === null) return false;
   return this.registrationCount >= this.registrationLimit;
 };
 
 // Method to increment registration count
-eventSchema.methods.incrementRegistration = async function() {
+eventSchema.methods.incrementRegistration = async function () {
   this.registrationCount += 1;
   return await this.save();
 };
 
 // Method to decrement registration count
-eventSchema.methods.decrementRegistration = async function() {
+eventSchema.methods.decrementRegistration = async function () {
   if (this.registrationCount > 0) {
     this.registrationCount -= 1;
     return await this.save();
@@ -243,7 +242,7 @@ eventSchema.methods.decrementRegistration = async function() {
 };
 
 // Virtual for revenue calculation
-eventSchema.virtual('totalRevenue').get(function() {
+eventSchema.virtual('totalRevenue').get(function () {
   return this.registrationCount * this.registrationFee;
 });
 

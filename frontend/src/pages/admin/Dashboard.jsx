@@ -33,26 +33,6 @@ const AdminDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Navbar */}
-      <nav className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <h1 className="text-xl font-bold text-gray-800">Felicity EMS - Admin Panel</h1>
-            </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-gray-700">Welcome, {user?.name}!</span>
-              <button
-                onClick={handleLogout}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
-              >
-                Logout
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
-
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white rounded-lg shadow-md p-6">
@@ -60,11 +40,7 @@ const AdminDashboard = () => {
             Admin Dashboard
           </h2>
           
-          <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-6">
-            <p className="text-yellow-700">
-              ✅ Authentication successful! You're logged in as an Administrator.
-            </p>
-          </div>
+
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div className="bg-gradient-to-br from-red-500 to-red-600 text-white p-6 rounded-lg">
@@ -104,7 +80,7 @@ const AdminDashboard = () => {
                 <p className="text-sm text-blue-700">Add or remove clubs/organizers</p>
               </button>
               <button 
-                onClick={() => navigate('/admin/events')}
+                onClick={() => navigate('/browse-events')}
                 className="p-4 bg-green-50 hover:bg-green-100 rounded-lg text-left transition"
               >
                 <h4 className="font-semibold text-green-900">View All Events</h4>

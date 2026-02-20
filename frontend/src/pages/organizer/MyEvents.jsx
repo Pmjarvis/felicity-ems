@@ -39,7 +39,7 @@ const MyEvents = () => {
 
   const handlePublish = async (id) => {
     try {
-      await axios.put(`/events/${id}`, { status: 'published' });
+      await axios.put(`/events/${id}`, { status: 'Published' });
       fetchEvents();
     } catch (error) {
       console.error('Error publishing event:', error);
@@ -49,16 +49,16 @@ const MyEvents = () => {
 
   const getStatusBadge = (status) => {
     const styles = {
-      draft: 'bg-gray-100 text-gray-800',
-      published: 'bg-green-100 text-green-800',
-      ongoing: 'bg-blue-100 text-blue-800',
-      completed: 'bg-purple-100 text-purple-800',
-      cancelled: 'bg-red-100 text-red-800'
+      Draft: 'bg-gray-100 text-gray-800',
+      Published: 'bg-green-100 text-green-800',
+      Ongoing: 'bg-blue-100 text-blue-800',
+      Completed: 'bg-purple-100 text-purple-800',
+      Cancelled: 'bg-red-100 text-red-800'
     };
 
     return (
-      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${styles[status]}`}>
-        {status.charAt(0).toUpperCase() + status.slice(1)}
+      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${styles[status] || 'bg-gray-100 text-gray-800'}`}>
+        {status}
       </span>
     );
   };
@@ -101,11 +101,10 @@ const MyEvents = () => {
               <button
                 key={status}
                 onClick={() => setFilter(status)}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                  filter === status
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${filter === status
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
               >
                 {status.charAt(0).toUpperCase() + status.slice(1)}
               </button>
@@ -145,7 +144,7 @@ const MyEvents = () => {
                   <div className="space-y-2 mb-4">
                     <div className="flex items-center text-sm text-gray-600">
                       <span className="font-medium mr-2">Type:</span>
-                      {event.eventType}
+                      {event.type}
                       {event.isTeamEvent && ' (Team)'}
                     </div>
                     <div className="flex items-center text-sm text-gray-600">
@@ -154,7 +153,7 @@ const MyEvents = () => {
                     </div>
                     <div className="flex items-center text-sm text-gray-600">
                       <span className="font-medium mr-2">Starts:</span>
-                      {new Date(event.eventStartDate).toLocaleDateString()}
+                      {new Date(event.startDate).toLocaleDateString()}
                     </div>
                   </div>
 
@@ -171,14 +170,22 @@ const MyEvents = () => {
                     </div>
                   )}
 
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-wrap">
                     <button
                       onClick={() => navigate(`/organizer/events/${event._id}/edit`)}
                       className="flex-1 px-3 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 text-sm"
                     >
                       Edit
                     </button>
-                    {event.status === 'draft' && (
+                    {['Published', 'Ongoing'].includes(event.status) && (
+                      <button
+                        onClick={() => navigate(`/organizer/scan/${event._id}`)}
+                        className="flex-1 px-3 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 text-sm"
+                      >
+                        Scan Tickets
+                      </button>
+                    )}
+                    {event.status === 'Draft' && (
                       <>
                         <button
                           onClick={() => handlePublish(event._id)}

@@ -31,7 +31,7 @@ const PasswordResets = () => {
 
     try {
       const response = await axios.post(`/admin/password-resets/${id}/approve`);
-      
+
       // Show new password to admin
       setNewPassword({
         organizerName: response.data.data.organizerName,
@@ -62,14 +62,14 @@ const PasswordResets = () => {
 
   const getStatusBadge = (status) => {
     const styles = {
-      pending: 'bg-yellow-100 text-yellow-800',
-      approved: 'bg-green-100 text-green-800',
-      rejected: 'bg-red-100 text-red-800'
+      Pending: 'bg-yellow-100 text-yellow-800',
+      Approved: 'bg-green-100 text-green-800',
+      Rejected: 'bg-red-100 text-red-800'
     };
 
     return (
-      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${styles[status]}`}>
-        {status.charAt(0).toUpperCase() + status.slice(1)}
+      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${styles[status] || 'bg-gray-100 text-gray-800'}`}>
+        {status}
       </span>
     );
   };
@@ -106,16 +106,15 @@ const PasswordResets = () => {
               <button
                 key={status}
                 onClick={() => setFilter(status)}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                  filter === status
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${filter === status
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
               >
                 {status.charAt(0).toUpperCase() + status.slice(1)}
-                {status === 'pending' && requests.filter(r => r.status === 'pending').length > 0 && (
+                {status === 'pending' && requests.filter(r => r.status === 'Pending').length > 0 && (
                   <span className="ml-2 bg-red-100 text-red-600 py-0.5 px-2 rounded-full text-xs">
-                    {requests.filter(r => r.status === 'pending').length}
+                    {requests.filter(r => r.status === 'Pending').length}
                   </span>
                 )}
               </button>
@@ -137,16 +136,18 @@ const PasswordResets = () => {
                     <div className="flex-1">
                       <div className="flex items-center space-x-3 mb-2">
                         <h3 className="text-lg font-semibold text-gray-900">
-                          {request.organizer?.organizationName || 
-                           `${request.organizer?.firstName} ${request.organizer?.lastName}`}
+                          {request.organizer?.organizerName ||
+                            request.organizer?.name ||
+                            `${request.organizer?.firstName || ''} ${request.organizer?.lastName || ''}`.trim() ||
+                            'Unknown Organizer'}
                         </h3>
                         {getStatusBadge(request.status)}
                       </div>
-                      
+
                       <p className="text-sm text-gray-600 mb-1">
                         <span className="font-medium">Email:</span> {request.organizer?.email}
                       </p>
-                      
+
                       <p className="text-sm text-gray-600 mb-3">
                         <span className="font-medium">Requested:</span>{' '}
                         {new Date(request.createdAt).toLocaleDateString('en-US', {
@@ -163,25 +164,25 @@ const PasswordResets = () => {
                         <p className="text-sm text-gray-600">{request.reason}</p>
                       </div>
 
-                      {request.status !== 'pending' && (
+                      {request.status !== 'Pending' && (
                         <div className="text-sm text-gray-600">
                           <p>
                             <span className="font-medium">
-                              {request.status === 'approved' ? 'Approved' : 'Rejected'} by:
+                              {request.status === 'Approved' ? 'Approved' : 'Rejected'} by:
                             </span>{' '}
-                            {request.approvedBy?.firstName} {request.approvedBy?.lastName} on{' '}
-                            {new Date(request.approvedAt).toLocaleDateString()}
+                            {request.reviewedBy?.firstName || 'Admin'} {request.reviewedBy?.lastName || ''} on{' '}
+                            {request.reviewedAt ? new Date(request.reviewedAt).toLocaleDateString() : 'N/A'}
                           </p>
-                          {request.adminNotes && (
+                          {request.adminComments && (
                             <p className="mt-1">
-                              <span className="font-medium">Admin Notes:</span> {request.adminNotes}
+                              <span className="font-medium">Admin Notes:</span> {request.adminComments}
                             </p>
                           )}
                         </div>
                       )}
                     </div>
 
-                    {request.status === 'pending' && (
+                    {request.status === 'Pending' && (
                       <div className="flex space-x-2 ml-4">
                         <button
                           onClick={() => handleApprove(request._id)}
@@ -209,7 +210,7 @@ const PasswordResets = () => {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4">
               <h2 className="text-2xl font-bold mb-4 text-green-600">✅ Password Reset Approved!</h2>
-              
+
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
                 <p className="text-sm text-yellow-800 font-semibold mb-2">
                   ⚠️ Important: Save this password now!

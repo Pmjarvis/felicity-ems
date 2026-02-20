@@ -20,10 +20,10 @@ router.get('/profile', auth, isOrganizer, async (req, res) => {
     });
   } catch (error) {
     console.error('Get organizer profile error:', error);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Server error while fetching profile',
-      error: error.message 
+      error: error.message
     });
   }
 });
@@ -33,30 +33,30 @@ router.get('/profile', auth, isOrganizer, async (req, res) => {
 // @access  Organizer only
 router.put('/profile', auth, isOrganizer, async (req, res) => {
   try {
-    const { 
-      organizationName, 
-      category, 
-      description, 
-      contactEmail, 
+    const {
+      organizerName: newOrganizerName,
+      category,
+      description,
+      contactEmail,
       contactNumber,
-      discordWebhook 
+      discordWebhook
     } = req.body;
 
     const organizer = await User.findById(req.user._id);
 
     if (!organizer) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Organizer not found' 
+      return res.status(404).json({
+        success: false,
+        message: 'Organizer not found'
       });
     }
 
     // Update fields
-    if (organizationName) organizer.organizationName = organizationName;
+    if (newOrganizerName) organizer.organizerName = newOrganizerName;
     if (category) organizer.category = category;
     if (description) organizer.description = description;
     if (contactEmail) organizer.contactEmail = contactEmail;
-    if (contactNumber) organizer.contactNumber = contactNumber;
+    if (contactNumber) organizer.contact = contactNumber;
     if (discordWebhook !== undefined) organizer.discordWebhook = discordWebhook;
 
     await organizer.save();
@@ -68,59 +68,80 @@ router.put('/profile', auth, isOrganizer, async (req, res) => {
     });
   } catch (error) {
     console.error('Update organizer profile error:', error);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Server error while updating profile',
-      error: error.message 
+      error: error.message
     });
   }
 });
 
 // @route   POST /api/organizer/request-password-reset
-// @desc    Request password reset from admin
-// @access  Organizer only
-router.post('/request-password-reset', auth, isOrganizer, async (req, res) => {
+// @desc    Request password reset from admin (PUBLIC - no auth required)
+// @access  Public (but verifies email belongs to an organizer)
+router.post('/request-password-reset', async (req, res) => {
   try {
-    const { reason } = req.body;
+    const { email, reason, contactNumber } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide your registered email address'
+      });
+    }
 
     if (!reason || reason.trim().length < 10) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Please provide a reason (minimum 10 characters)' 
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide a reason (minimum 10 characters)'
+      });
+    }
+
+    // Find organizer by email
+    const organizer = await User.findOne({
+      email: email.toLowerCase(),
+      role: 'organizer'
+    });
+
+    if (!organizer) {
+      return res.status(404).json({
+        success: false,
+        message: 'No organizer account found with this email address'
       });
     }
 
     // Check if there's already a pending request
     const existingRequest = await PasswordReset.findOne({
-      organizer: req.user._id,
-      status: 'pending'
+      organizer: organizer._id,
+      status: 'Pending'
     });
 
     if (existingRequest) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'You already have a pending password reset request' 
+      return res.status(400).json({
+        success: false,
+        message: 'You already have a pending password reset request. Please wait for admin review.'
       });
     }
 
     // Create password reset request
     const resetRequest = await PasswordReset.create({
-      organizer: req.user._id,
+      organizer: organizer._id,
       reason: reason.trim(),
-      status: 'pending'
+      contactNumber: contactNumber || '',
+      status: 'Pending'
     });
 
     res.status(201).json({
       success: true,
-      message: 'Password reset request submitted successfully. Admin will review it soon.',
-      data: resetRequest
+      message: 'Password reset request submitted successfully! An admin will review it and you will receive a new password.',
+      data: { requestId: resetRequest._id }
     });
   } catch (error) {
     console.error('Request password reset error:', error);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Server error while submitting password reset request',
-      error: error.message 
+      error: error.message
     });
   }
 });
@@ -141,9 +162,9 @@ router.get('/stats', auth, isOrganizer, async (req, res) => {
     const totalEvents = events.length;
     const totalRegistrations = registrations.length;
     const totalRevenue = registrations
-      .filter(r => r.paymentStatus === 'successful')
-      .reduce((sum, r) => sum + (r.amountPaid || 0), 0);
-    const totalAttendance = registrations.filter(r => r.attended).length;
+      .filter(r => r.payment && r.payment.status === 'Completed')
+      .reduce((sum, r) => sum + (r.payment?.amount || 0), 0);
+    const totalAttendance = registrations.filter(r => r.attendance && r.attendance.marked).length;
 
     res.json({
       success: true,
@@ -162,10 +183,10 @@ router.get('/stats', auth, isOrganizer, async (req, res) => {
     });
   } catch (error) {
     console.error('Get organizer stats error:', error);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Server error while fetching statistics',
-      error: error.message 
+      error: error.message
     });
   }
 });
