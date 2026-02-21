@@ -248,24 +248,45 @@ const Profile = () => {
                         </div>
 
                         {/* Followed Clubs */}
-                        {profile.followedClubs.length > 0 && (
-                            <div className="mt-6">
-                                <label className="block text-sm font-medium text-gray-700 mb-3">Followed Clubs</label>
+                        <div className="mt-6">
+                            <label className="block text-sm font-medium text-gray-700 mb-3">Followed Clubs</label>
+                            {profile.followedClubs.length > 0 ? (
                                 <div className="flex flex-wrap gap-2">
                                     {profile.followedClubs.map((club) => (
                                         <span
                                             key={club._id}
-                                            className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm"
+                                            className="inline-flex items-center gap-1 px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm"
                                         >
                                             {club.organizerName}
+                                            <button
+                                                type="button"
+                                                onClick={async () => {
+                                                    try {
+                                                        await axios.delete(`/users/follow/${club._id}`);
+                                                        setProfile(prev => ({
+                                                            ...prev,
+                                                            followedClubs: prev.followedClubs.filter(c => c._id !== club._id)
+                                                        }));
+                                                        setMessage({ type: 'success', text: `Unfollowed ${club.organizerName}` });
+                                                    } catch (err) {
+                                                        setMessage({ type: 'error', text: 'Failed to unfollow' });
+                                                    }
+                                                }}
+                                                className="ml-1 text-purple-500 hover:text-red-600 font-bold"
+                                                title={`Unfollow ${club.organizerName}`}
+                                            >
+                                                ×
+                                            </button>
                                         </span>
                                     ))}
                                 </div>
-                                <p className="text-sm text-gray-500 mt-2">
-                                    Manage your followed clubs from the <a href="/clubs" className="text-indigo-600 hover:underline">Clubs page</a>
-                                </p>
-                            </div>
-                        )}
+                            ) : (
+                                <p className="text-sm text-gray-500">No clubs followed yet.</p>
+                            )}
+                            <p className="text-sm text-gray-500 mt-2">
+                                Discover more clubs on the <a href="/clubs" className="text-indigo-600 hover:underline">Clubs page</a>
+                            </p>
+                        </div>
 
                         <button
                             type="submit"

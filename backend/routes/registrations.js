@@ -57,7 +57,11 @@ router.post('/:eventId', auth, isParticipant, async (req, res) => {
     // Handle merchandise purchase
     let merchandiseDetails = {};
     if (event.type === 'Merchandise') {
-      const { size, color, variant, quantity } = body;
+      // Support both naming conventions (selectedSize or size)
+      const size = body.selectedSize || body.size;
+      const color = body.selectedColor || body.color;
+      const variant = body.selectedVariant || body.variant;
+      const quantity = body.quantity;
       
       // Check stock
       if (event.merchandise && event.merchandise.stockQuantity !== undefined) {
