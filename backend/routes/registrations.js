@@ -90,7 +90,7 @@ router.post('/:eventId', auth, isParticipant, async (req, res) => {
       status: 'Registered',
       payment: {
         amount: event.registrationFee || 0,
-        status: event.registrationFee > 0 ? 'Pending' : 'Completed'
+        status: 'Completed'
       },
       formResponses: body.formResponses || {},
       merchandiseDetails: event.type === 'Merchandise' ? merchandiseDetails : undefined

@@ -13,10 +13,13 @@ const { isOrganizer } = require('../middleware/checkRole');
 router.get('/profile', auth, isOrganizer, async (req, res) => {
   try {
     const organizer = await User.findById(req.user._id).select('-password');
+    const profileData = organizer.toObject();
+    // Map 'contact' to 'contactNumber' for frontend consistency
+    profileData.contactNumber = profileData.contact || '';
 
     res.json({
       success: true,
-      data: organizer
+      data: profileData
     });
   } catch (error) {
     console.error('Get organizer profile error:', error);
@@ -61,10 +64,13 @@ router.put('/profile', auth, isOrganizer, async (req, res) => {
 
     await organizer.save();
 
+    const responseData = organizer.toObject();
+    responseData.contactNumber = responseData.contact || '';
+
     res.json({
       success: true,
       message: 'Profile updated successfully',
-      data: organizer
+      data: responseData
     });
   } catch (error) {
     console.error('Update organizer profile error:', error);
