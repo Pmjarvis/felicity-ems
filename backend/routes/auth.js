@@ -38,11 +38,23 @@ router.post('/register', async (req, res) => {
       });
     }
 
-    // Determine participant type based on email domain
-    let participantType = 'Non-IIIT';
-    const iiitDomains = ['@students.iiit.ac.in', '@iiit.ac.in'];
+    // Determine and validate participant type based on email domain
+    const iiitDomains = ['@students.iiit.ac.in', '@iiit.ac.in', '@research.iiit.ac.in'];
+    const isIIITEmail = iiitDomains.some(domain => email.toLowerCase().endsWith(domain));
     
-    if (iiitDomains.some(domain => email.toLowerCase().includes(domain))) {
+    // If participantType is explicitly provided, validate it
+    let participantType = req.body.participantType || (isIIITEmail ? 'IIIT' : 'Non-IIIT');
+    
+    // IIIT participants MUST use IIIT email domain
+    if (participantType === 'IIIT' && !isIIITEmail) {
+      return res.status(400).json({
+        success: false,
+        message: 'IIIT participants must register using an IIIT-issued email ID (@students.iiit.ac.in or @iiit.ac.in)'
+      });
+    }
+    
+    // If email is IIIT domain, force type to IIIT
+    if (isIIITEmail) {
       participantType = 'IIIT';
     }
 

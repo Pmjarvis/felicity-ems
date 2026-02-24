@@ -15,7 +15,8 @@ const Register = () => {
     contact: '',
     collegeName: '',
     interests: [],
-    agreeTerms: false
+    agreeTerms: false,
+    participantType: ''
   });
   const [showPassword, setShowPassword] = useState(false);
   const [localError, setLocalError] = useState('');
@@ -42,13 +43,22 @@ const Register = () => {
 
     // Auto-detect participant type based on email
     if (name === 'email') {
-      if (value.includes('@students.iiit.ac.in') || value.includes('@iiit.ac.in')) {
+      if (value.endsWith('@students.iiit.ac.in') || value.endsWith('@iiit.ac.in') || value.endsWith('@research.iiit.ac.in')) {
         setParticipantType('IIIT');
-      } else if (value) {
+        setFormData(prev => ({ ...prev, [name]: value, participantType: 'IIIT' }));
+        return;
+      } else if (value && formData.participantType !== 'IIIT') {
         setParticipantType('Non-IIIT');
-      } else {
+      } else if (!value) {
         setParticipantType('');
       }
+    }
+
+    // Handle participant type selection
+    if (name === 'participantType') {
+      setParticipantType(value);
+      // Clear email error if switching type
+      setLocalError('');
     }
   };
 
@@ -86,6 +96,20 @@ const Register = () => {
       return;
     }
 
+    // IIIT email domain validation
+    if (formData.participantType === 'IIIT') {
+      const email = formData.email.toLowerCase();
+      if (!email.endsWith('@students.iiit.ac.in') && !email.endsWith('@iiit.ac.in') && !email.endsWith('@research.iiit.ac.in')) {
+        setLocalError('IIIT participants must use an IIIT-issued email ID (@students.iiit.ac.in or @iiit.ac.in)');
+        return;
+      }
+    }
+
+    if (!formData.participantType) {
+      setLocalError('Please select your participant type (IIIT or Non-IIIT)');
+      return;
+    }
+
     if (!formData.agreeTerms) {
       setLocalError('Please agree to the terms and conditions');
       return;
@@ -99,6 +123,7 @@ const Register = () => {
       password: formData.password,
       contact: formData.contact,
       collegeName: formData.collegeName,
+      participantType: formData.participantType,
       preferences: {
         interests: formData.interests
       }
@@ -142,10 +167,46 @@ const Register = () => {
             {participantType && (
               <div className={`p-3 rounded-lg ${participantType === 'IIIT' ? 'bg-blue-50 border-l-4 border-blue-500' : 'bg-green-50 border-l-4 border-green-500'}`}>
                 <p className={`text-sm font-medium ${participantType === 'IIIT' ? 'text-blue-700' : 'text-green-700'}`}>
-                  {participantType === 'IIIT' ? '🎓 IIIT Student' : '👤 External Participant'}
+                  {participantType === 'IIIT' ? '🎓 IIIT Student — IIIT email required' : '👤 External Participant'}
                 </p>
               </div>
             )}
+
+            {/* Participant Type Selection */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Participant Type <span className="text-red-500">*</span>
+              </label>
+              <div className="flex gap-4">
+                <label className={`flex-1 flex items-center justify-center gap-2 p-3 border-2 rounded-lg cursor-pointer transition ${formData.participantType === 'IIIT' ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-blue-300'}`}>
+                  <input
+                    type="radio"
+                    name="participantType"
+                    value="IIIT"
+                    checked={formData.participantType === 'IIIT'}
+                    onChange={handleChange}
+                    className="text-blue-600"
+                  />
+                  <span className="text-sm font-medium">🎓 IIIT Student</span>
+                </label>
+                <label className={`flex-1 flex items-center justify-center gap-2 p-3 border-2 rounded-lg cursor-pointer transition ${formData.participantType === 'Non-IIIT' ? 'border-green-500 bg-green-50' : 'border-gray-300 hover:border-green-300'}`}>
+                  <input
+                    type="radio"
+                    name="participantType"
+                    value="Non-IIIT"
+                    checked={formData.participantType === 'Non-IIIT'}
+                    onChange={handleChange}
+                    className="text-green-600"
+                  />
+                  <span className="text-sm font-medium">👤 Non-IIIT</span>
+                </label>
+              </div>
+              {formData.participantType === 'IIIT' && (
+                <p className="mt-1 text-xs text-blue-600 font-medium">
+                  ⚠️ You must use your IIIT email (@students.iiit.ac.in or @iiit.ac.in)
+                </p>
+              )}
+            </div>
 
             {/* Name Fields */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
