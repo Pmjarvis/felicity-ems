@@ -26,7 +26,8 @@ router.post('/', auth, isOrganizer, async (req, res) => {
       registrationFee,
       tags,
       customForm,
-      merchandise
+      merchandise,
+      venue
     } = req.body;
 
     // Validation
@@ -59,6 +60,7 @@ router.post('/', auth, isOrganizer, async (req, res) => {
       registrationLimit: registrationLimit || null,
       registrationFee: registrationFee || 0,
       tags: tags || [],
+      venue: venue || null,
       status: 'Draft'
     };
 
