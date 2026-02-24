@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const QRCode = require('qrcode');
 const Registration = require('../models/Registration');
 const Event = require('../models/Event');
 const User = require('../models/User');
@@ -96,6 +97,20 @@ router.post('/:eventId', auth, isParticipant, async (req, res) => {
       merchandiseDetails: event.type === 'Merchandise' ? merchandiseDetails : undefined
     });
 
+    // Generate QR code (base64 data URI) and save to registration
+    try {
+      const qrDataUrl = await QRCode.toDataURL(registration.ticketId, {
+        errorCorrectionLevel: 'H',
+        width: 300,
+        margin: 2,
+        color: { dark: '#000000', light: '#ffffff' }
+      });
+      registration.qrCode = qrDataUrl;
+      await registration.save();
+    } catch (qrErr) {
+      console.error('QR generation error (non-fatal):', qrErr.message);
+    }
+
     // Increment registration count
     event.registrationCount = (event.registrationCount || 0) + 1;
     // Lock custom form after first registration
@@ -116,7 +131,8 @@ router.post('/:eventId', auth, isParticipant, async (req, res) => {
         venue: event.venue || 'TBA',
         registrationFee: event.registrationFee
       },
-      registration.ticketId
+      registration.ticketId,
+      registration.qrCode
     ).catch(err => console.error('Email send error:', err.message));
 
     // Populate and return

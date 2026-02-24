@@ -1,4 +1,5 @@
 const express = require('express');
+const QRCode = require('qrcode');
 const router = express.Router();
 const Team = require('../models/Team');
 const Event = require('../models/Event');
@@ -273,13 +274,29 @@ router.post('/finalize/:teamId', auth, isParticipant, async (req, res) => {
             status: team.event.registrationFee > 0 ? 'Pending' : 'Completed'
           }
         });
+
+        // Generate QR code for team member ticket
+        try {
+          const qrDataUrl = await QRCode.toDataURL(ticketId, {
+            errorCorrectionLevel: 'H',
+            width: 300,
+            margin: 2,
+            color: { dark: '#000000', light: '#000000' }
+          });
+          registration.qrCode = qrDataUrl;
+          await registration.save();
+        } catch (qrErr) {
+          console.error('QR generation error (non-fatal):', qrErr.message);
+        }
+
         registrations.push(registration._id);
         
         registrationDetails.push({
           userId: member.user._id,
           userName: member.user.name,
           userEmail: member.user.email,
-          ticketNumber: ticketId
+          ticketNumber: ticketId,
+          qrCode: registration.qrCode || null
         });
       }
     }
@@ -315,7 +332,8 @@ router.post('/finalize/:teamId', auth, isParticipant, async (req, res) => {
         regDetail.userEmail,
         regDetail.userName,
         teamDetails,
-        regDetail.ticketNumber
+        regDetail.ticketNumber,
+        regDetail.qrCode
       ).catch(err => {
         console.error(`Failed to send email to ${regDetail.userEmail}:`, err.message);
       });

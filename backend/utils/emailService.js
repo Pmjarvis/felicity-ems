@@ -47,9 +47,28 @@ const sendMail = async (transporter, mailOptions) => {
 };
 
 // Send registration confirmation email
-const sendRegistrationEmail = async (userEmail, userName, eventDetails, ticketNumber) => {
+const sendRegistrationEmail = async (userEmail, userName, eventDetails, ticketNumber, qrCodeDataUrl = null) => {
   try {
     const transporter = await createTransporter();
+
+    // Prepare QR code attachment if available
+    const attachments = [];
+    let qrCidHtml = '';
+    if (qrCodeDataUrl) {
+      // Extract base64 data from data URL (data:image/png;base64,XXXX)
+      const base64Data = qrCodeDataUrl.replace(/^data:image\/png;base64,/, '');
+      attachments.push({
+        filename: 'qrcode.png',
+        content: base64Data,
+        encoding: 'base64',
+        cid: 'ticketqrcode'
+      });
+      qrCidHtml = `
+                <div style="text-align: center; margin: 20px 0;">
+                  <img src="cid:ticketqrcode" alt="QR Code" width="200" height="200" style="border: 1px solid #e0e0e0; border-radius: 8px;" />
+                  <p style="color: #666; font-size: 13px; margin-top: 8px;">Scan this QR code at the event venue</p>
+                </div>`;
+    }
 
     const mailOptions = {
       from: `"Felicity EMS" <${process.env.EMAIL_USER || 'noreply@felicity-ems.com'}>`,
@@ -84,6 +103,7 @@ const sendRegistrationEmail = async (userEmail, userName, eventDetails, ticketNu
               <div class="ticket-box">
                 <h3 style="margin-top: 0; color: #667eea;">Your Event Ticket</h3>
                 <div class="ticket-number">${ticketNumber}</div>
+                ${qrCidHtml}
                 <p style="text-align: center; margin: 10px 0; color: #666;">Please save this ticket number</p>
               </div>
 
@@ -139,8 +159,12 @@ const sendRegistrationEmail = async (userEmail, userName, eventDetails, ticketNu
       `
     };
 
+    if (attachments.length > 0) {
+      mailOptions.attachments = attachments;
+    }
+
     await sendMail(transporter, mailOptions);
-    console.log(`✅ Registration email sent to ${userEmail}`);
+    console.log(`✅ Registration email sent to ${userEmail}${qrCodeDataUrl ? ' (with QR code)' : ''}`);
     return { success: true };
   } catch (error) {
     console.error('❌ Email sending failed:', error.message);
@@ -244,9 +268,27 @@ const sendTeamInvitationEmail = async (toEmail, toName, teamDetails, inviteCode)
 };
 
 // Send team finalization email to all members
-const sendTeamFinalizedEmail = async (memberEmail, memberName, teamDetails, ticketNumber) => {
+const sendTeamFinalizedEmail = async (memberEmail, memberName, teamDetails, ticketNumber, qrCodeDataUrl = null) => {
   try {
     const transporter = await createTransporter();
+
+    // Prepare QR code attachment if available
+    const attachments = [];
+    let qrCidHtml = '';
+    if (qrCodeDataUrl) {
+      const base64Data = qrCodeDataUrl.replace(/^data:image\/png;base64,/, '');
+      attachments.push({
+        filename: 'qrcode.png',
+        content: base64Data,
+        encoding: 'base64',
+        cid: 'ticketqrcode'
+      });
+      qrCidHtml = `
+                <div style="text-align: center; margin: 20px 0;">
+                  <img src="cid:ticketqrcode" alt="QR Code" width="200" height="200" style="border: 1px solid #e0e0e0; border-radius: 8px;" />
+                  <p style="color: #666; font-size: 13px; margin-top: 8px;">Scan this QR code at the event venue</p>
+                </div>`;
+    }
 
     const mailOptions = {
       from: `"Felicity EMS" <${process.env.EMAIL_USER || 'noreply@felicity-ems.com'}>`,
@@ -282,6 +324,7 @@ const sendTeamFinalizedEmail = async (memberEmail, memberName, teamDetails, tick
               <div class="ticket-box">
                 <h3 style="margin-top: 0; color: #8b5cf6;">Your Personal Ticket</h3>
                 <div class="ticket-number">${ticketNumber}</div>
+                ${qrCidHtml}
                 <p style="text-align: center; margin: 10px 0; color: #666;">Each team member has a unique ticket</p>
               </div>
 
@@ -334,8 +377,12 @@ const sendTeamFinalizedEmail = async (memberEmail, memberName, teamDetails, tick
       `
     };
 
+    if (attachments.length > 0) {
+      mailOptions.attachments = attachments;
+    }
+
     await sendMail(transporter, mailOptions);
-    console.log(`✅ Team finalized email sent to ${memberEmail}`);
+    console.log(`✅ Team finalized email sent to ${memberEmail}${qrCodeDataUrl ? ' (with QR code)' : ''}`);
     return { success: true };
   } catch (error) {
     console.error('❌ Email sending failed:', error.message);
