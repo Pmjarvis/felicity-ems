@@ -104,6 +104,11 @@ const registrationSchema = new mongoose.Schema({
       scannedBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
+      },
+      result: {
+        type: String,
+        enum: ['success', 'duplicate', 'invalid'],
+        default: 'success'
       }
     }]
   },
