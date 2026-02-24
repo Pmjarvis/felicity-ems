@@ -22,6 +22,23 @@ const messageSchema = new mongoose.Schema({
     trim: true,
     maxlength: 1000
   },
+  // Threading support
+  parentMessage: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Message',
+    default: null
+  },
+  // Reactions
+  reactions: [{
+    emoji: { type: String, required: true },
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    createdAt: { type: Date, default: Date.now }
+  }],
+  // Announcement flag (organizer-only)
+  isAnnouncement: {
+    type: Boolean,
+    default: false
+  },
   isPinned: {
     type: Boolean,
     default: false
